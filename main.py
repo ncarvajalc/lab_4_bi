@@ -1,4 +1,6 @@
 from typing import Optional
+
+import numpy
 from DataModel import DataModel
 from joblib import load
 from fastapi import FastAPI
@@ -15,8 +17,8 @@ def read_root():
 @app.post("/predict")
 def make_predictions(dataModel: DataModel):
     df = pd.DataFrame(dataModel.dict(),
-                      columns=dataModel.dict().keys(), index=[0])
-    df.columns = dataModel.columns()
+                      columns=dataModel.columns(), index=[0])
+    
     model = load("assets/modelo.joblib")
     result = model.predict(df)
-    return result
+    return {"Predicción": numpy.array2string(result)}
