@@ -3,6 +3,7 @@ from typing import Optional,List
 
 import numpy
 from DataModel import DataModel
+from DataModelWithPredictor import DataModelWithPredictor
 from joblib import load
 from fastapi import FastAPI, Query
 import pandas as pd
@@ -22,10 +23,10 @@ def make_predictions(dataModel: DataModel):
     
     model = load("assets/modelo.joblib")
     result = model.predict(df)
-    return {"Predicción": result.tolist()}
+    return {"Predicción": result.tolist()[0]}
 
 @app.post("/predictMany")
-def make_predictions(dataModels : List[DataModel]):
+def make_predictions(dataModels : List[DataModelWithPredictor]):
 
     listModels = []
 
@@ -35,6 +36,12 @@ def make_predictions(dataModels : List[DataModel]):
         
     df = pd.DataFrame(listModels)
     df.columns=dataModels[0].columns()
+
+    vo= "Life expectancy"
+
+    X = df.drop(vo, axis=1)
+    y= df[vo]
+
     model = load("assets/modelo.joblib")
-    result = model.predict(df)
-    return {"Predicción": result.tolist()}
+    result = model.score(X,y)
+    return {"R^2 del modelo": result}
